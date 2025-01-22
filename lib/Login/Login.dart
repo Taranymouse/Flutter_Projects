@@ -1,23 +1,23 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  // สร้างตัวควบคุม TextField
+class _LoginPageState extends State<LoginPage> {
+  //ตัวแปรสำหรับควบคุม TextField
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้จาก API
+  //function Get ข้อมูล Users จากฐานข้อมูลด้วย API
   Future<List<Map<String, dynamic>>> fetchUsers() async {
-    final response =
-        await http.get(Uri.parse('http://192.168.1.116:8000/users/'));
+    final response = await http
+        .get(Uri.parse('http://192.168.1.116:8000/users/')); // Get Api จาก URL
 
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -26,14 +26,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ฟังก์ชันสำหรับตรวจสอบข้อมูลผู้ใช้
+  //function ตรวจสอบผู้ใช้
   Future<void> login(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please fill in all fields")),
+        SnackBar(content: Text("กรุณากรอกข้อมูลให้ครบถ้วน")),
       );
       return;
     }
@@ -50,7 +50,15 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(
               content: Text("Welcome ${user['email']}! Role: ${user['role']}")),
         );
-        print("Login successful: ${user['email']}");
+        // นำทางไปยังหน้า HomePage และส่ง email ไปให้ด้วย
+        Navigator.pushNamed(
+          context,
+          '/home',
+          arguments: {
+            'email': user['email'],
+            'role': user['role'],
+          },
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Invalid email or password")),
@@ -67,31 +75,29 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Sign In"),
+        title: Text("Login"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Container(
+        padding: EdgeInsets.all(20), // padding รอบๆ Container
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment
+              .start, //ทำให้ Element ภายใต้ Column อยู่ตรงกลาง App
           children: [
             Center(
               child: Text(
-                "SC THESIS",
+                "IT / CS Projects",
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+                  color: Colors.purple[900],
                 ),
               ),
             ),
-            SizedBox(height: 10),
-            Text(
-              "Please login to your account.",
-              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+            SizedBox(
+              height: 20,
             ),
-            SizedBox(height: 20),
             TextField(
               controller: emailController,
               decoration: InputDecoration(
@@ -99,41 +105,52 @@ class _LoginScreenState extends State<LoginScreen> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.email),
               ),
-              keyboardType: TextInputType.emailAddress,
             ),
-            SizedBox(height: 20),
+            SizedBox(
+              height: 10,
+            ),
             TextField(
               controller: passwordController,
               decoration: InputDecoration(
                 labelText: "Password",
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => login(context), // เรียกฟังก์ชัน login
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text(
-                "Login",
-                style: TextStyle(fontSize: 18),
+                prefixIcon: Icon(Icons.password),
               ),
             ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Don't have an account?"),
-                TextButton(
-                  onPressed: () {
-                    print("Navigate to Register page");
-                  },
-                  child: Text("Register"),
-                ),
-              ],
+            SizedBox(
+              height: 15,
+            ),
+            Center(
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => login(context),
+                    child: Text(
+                      "Login",
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Colors.red[400], // กำหนดสีพื้นหลังของปุ่ม
+                      foregroundColor: Colors.white, // กำหนดสีข้อความบนปุ่ม
+                    ),
+                    child: Text(
+                      "Google",
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
