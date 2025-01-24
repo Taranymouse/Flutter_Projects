@@ -7,6 +7,7 @@ buildscript {
         // ระบุเวอร์ชันของ Android Gradle Plugin ที่คุณต้องการใช้
         classpath 'com.android.tools.build:gradle:8.0.0'  // อัปเดตให้เป็นเวอร์ชันล่าสุด
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10' // เพิ่ม Kotlin plugin ถ้าจำเป็น
+        classpath 'com.google.gms:google-services:4.3.15'
     }
 }
 

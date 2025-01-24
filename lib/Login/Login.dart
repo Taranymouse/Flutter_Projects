@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:demoproject/Login/google_auth.dart';  // นำเข้า AuthService
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,14 +11,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  //ตัวแปรสำหรับควบคุม TextField
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  //function Get ข้อมูล Users จากฐานข้อมูลด้วย API
   Future<List<Map<String, dynamic>>> fetchUsers() async {
-    final response = await http
-        .get(Uri.parse('http://192.168.1.116:8000/users/')); // Get Api จาก URL
+    final response = await http.get(Uri.parse('http://192.168.1.116:8000/users/'));
 
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -26,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  //function ตรวจสอบผู้ใช้
   Future<void> login(BuildContext context) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -50,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
           SnackBar(
               content: Text("Welcome ${user['email']}! Role: ${user['role']}")),
         );
-        // นำทางไปยังหน้า HomePage และส่ง email ไปให้ด้วย
         Navigator.pushNamed(
           context,
           '/home',
@@ -79,11 +75,10 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: true,
       ),
       body: Container(
-        padding: EdgeInsets.all(20), // padding รอบๆ Container
+        padding: EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment
-              .start, //ทำให้ Element ภายใต้ Column อยู่ตรงกลาง App
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Text(
@@ -136,11 +131,37 @@ class _LoginPageState extends State<LoginPage> {
                     height: 10,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      try {
+                        // เรียกใช้งานฟังก์ชัน signInWithGoogle จาก AuthService
+                        final authService = AuthService();
+                        final user = await authService.signInWithGoogle();
+                        if (user != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Logged in as: ${user.displayName}")),
+                          );
+                          Navigator.pushNamed(
+                            context,
+                            '/home',
+                            arguments: {
+                              'email': user.email,
+                              'role': 'Google User',
+                            },
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Google Sign-In canceled")),
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error: ${e.toString()}")),
+                        );
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.red[400], // กำหนดสีพื้นหลังของปุ่ม
-                      foregroundColor: Colors.white, // กำหนดสีข้อความบนปุ่ม
+                      backgroundColor: Colors.red[400],
+                      foregroundColor: Colors.white,
                     ),
                     child: Text(
                       "Google",
