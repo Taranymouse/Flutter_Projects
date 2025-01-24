@@ -20,7 +20,7 @@ class DemoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.yellow,
       ),
-      home: ProfilePage(),
+      home: Myhomepage(),
       // routes: {
       //   '/': (context) => LoginPage(),
       //   '/home': (context) => Myhomepage(), // ลงทะเบียนเส้นทาง
