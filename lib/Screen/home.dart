@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:demoproject/Navigation/BotNav.dart';
 import 'package:demoproject/Navigation/Nav_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:demoproject/Profile.dart';
+import 'package:demoproject/Screen/Profile.dart';
 
 class Myhomepage extends StatelessWidget {
   const Myhomepage({super.key});
@@ -30,17 +30,6 @@ class Myhomepage extends StatelessWidget {
           ],
         ),
         backgroundColor: Colors.purple[900],
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.logout,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              _logout(context);
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -230,10 +219,6 @@ class Myhomepage extends StatelessWidget {
         },
       ),
     );
-  }
-
-  void _logout(BuildContext context) {
-    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
 
   Widget _buildButton(

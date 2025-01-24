@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:demoproject/home.dart';
-import 'package:demoproject/Profile.dart';
-import 'package:animations/animations.dart';
-import 'package:demoproject/Search.dart';
+import 'package:demoproject/Screen/home.dart';
+import 'package:demoproject/Screen/Profile.dart';
+// import 'package:animations/animations.dart';
+import 'package:demoproject/Screen/Notification.dart';
 
 void navigateToPage(BuildContext context, int index, int currentIndex) {
   if (index == currentIndex) {
@@ -10,25 +10,17 @@ void navigateToPage(BuildContext context, int index, int currentIndex) {
   }
 
   Widget nextPage;
-  Offset beginOffset;
-  Offset endOffset;
 
   // กำหนดหน้าเป้าหมาย
   switch (index) {
     case 0:
       nextPage = const SearchPage();
-      beginOffset = const Offset(-1.0, 0.0); // เลื่อนจากซ้าย
-      endOffset = Offset.zero;
       break;
     case 1:
       nextPage = const Myhomepage();
-      beginOffset = const Offset(0.0, 0.0); // เลื่อนจากขวา
-      endOffset = Offset.zero;
       break;
     case 2:
       nextPage = const ProfilePage();
-      beginOffset = const Offset(1.0, 0.0); // เลื่อนจากขวา
-      endOffset = Offset.zero;
       break;
     default:
       return;
@@ -37,18 +29,16 @@ void navigateToPage(BuildContext context, int index, int currentIndex) {
   Navigator.pushReplacement(
     context,
     PageRouteBuilder(
+      transitionDuration:
+          const Duration(milliseconds: 200), // ปรับความเร็ว (500ms)
       pageBuilder: (context, animation, secondaryAnimation) => nextPage,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var tween = Tween(begin: beginOffset, end: endOffset)
-            .chain(CurveTween(curve: Curves.easeInOut));
-        var slideAnimation = animation.drive(tween);
+        var fadeTween = Tween<double>(begin: 0.0, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)); // ใช้ CurveTween
 
-        return SlideTransition(
-          position: slideAnimation,
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+        return FadeTransition(
+          opacity: animation.drive(fadeTween), // ใช้ fadeTween เพื่อปรับเฟด
+          child: child,
         );
       },
     ),

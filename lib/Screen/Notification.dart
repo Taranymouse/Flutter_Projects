@@ -9,12 +9,12 @@ class SearchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SearchPage'),
+        title: const Text('Notification'),
         backgroundColor: Colors.purple[900],
       ),
       body: const Center(
         child: Text(
-          'This is the Search Page',
+          'This is the Notification Page',
           style: TextStyle(fontSize: 18),
         ),
       ),

@@ -1,8 +1,9 @@
 import 'package:demoproject/Login/Login.dart';
 import 'package:flutter/material.dart';
+import 'package:demoproject/Screen/Profile.dart';
 // import 'package:demoproject/Login/LoginExample.dart';
 // import 'package:demoproject/testAPI.dart';
-import 'package:demoproject/home.dart';
+import 'package:demoproject/Screen/home.dart';
 
 void main() {
   runApp(DemoApp());
@@ -19,7 +20,7 @@ class DemoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.yellow,
       ),
-      home: Myhomepage(),
+      home: ProfilePage(),
       // routes: {
       //   '/': (context) => LoginPage(),
       //   '/home': (context) => Myhomepage(), // ลงทะเบียนเส้นทาง

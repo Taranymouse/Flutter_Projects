@@ -15,8 +15,8 @@ class BottomNav extends StatelessWidget {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: 'Search',
+          icon: Icon(Icons.notifications_active),
+          label: 'Notification',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
