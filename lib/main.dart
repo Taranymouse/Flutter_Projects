@@ -1,18 +1,26 @@
 import 'package:demoproject/Login/Login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:demoproject/Screen/Profile.dart';
+// import 'package:demoproject/Screen/Profile.dart';
 // import 'package:demoproject/Login/LoginExample.dart';
 // import 'package:demoproject/testAPI.dart';
 import 'package:demoproject/Screen/home.dart';
+import 'package:demoproject/Login/user_provider.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(DemoApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: const DemoApp(),
+    ),
+  );
 }
 
-//Custom widget
 class DemoApp extends StatelessWidget {
   const DemoApp({super.key});
 
@@ -23,10 +31,9 @@ class DemoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.yellow,
       ),
-      // home: Myhomepage(),
       routes: {
         '/': (context) => LoginPage(),
-        '/home': (context) => Myhomepage(), // ลงทะเบียนเส้นทาง
+        '/home': (context) => Myhomepage(),
       },
     );
   }

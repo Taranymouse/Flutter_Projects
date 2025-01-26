@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:demoproject/Navigation/BotNav.dart';
 import 'package:demoproject/Navigation/Nav_helper.dart';
-import 'package:flutter/material.dart';
-import 'package:demoproject/Screen/Profile.dart';
+import 'package:demoproject/Login/user_provider.dart';
+import 'package:provider/provider.dart';
+// import 'package:flutter/material.dart';
+// import 'package:demoproject/Screen/Profile.dart';
 
 class Myhomepage extends StatelessWidget {
   const Myhomepage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // รับ arguments ที่ส่งมาจากหน้า Login
-    final Map<String, dynamic>? args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-    // ตั้งค่าชื่อและ role
-    final String userName = args?['email'] ?? "Anonymouse";
-    final String role = args?['role'] ?? "Hacker Role";
+    final user = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -67,7 +63,7 @@ class Myhomepage extends StatelessWidget {
                               vertical: 1.0), // เพิ่ม padding ด้านใน
                           color: Colors.purple[900], // กำหนดสีพื้นหลัง
                           child: Text(
-                            role,
+                            user.role,
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.white,
@@ -77,10 +73,16 @@ class Myhomepage extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      userName,
+                      user.name,
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
+                    // Text(
+                    //   "(${user.email})",
+                    //   style: TextStyle(
+                    //     fontSize: 8,
+                    //   ),
+                    // ),
                   ],
                 ),
                 Spacer(),
