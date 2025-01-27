@@ -16,80 +16,130 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  Future<List<Map<String, dynamic>>> fetchUsers() async {
-    final response =
-        await http.get(Uri.parse('http://192.168.1.116:8000/users/'));
+  Future<void> loginWithGoogle(BuildContext context) async {
+    final AuthService _authService = AuthService();
+    try {
+      final user = await _authService.signInWithGoogle();
+      if (user != null) {
+        final token = await user.getIdToken(true);
+        print("ID Token: $token");
 
-    if (response.statusCode == 200) {
-      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load users');
-    }
-  }
-
-Future<void> loginWithGoogle(BuildContext context) async {
-  final AuthService _authService = AuthService();
-  try {
-    // ล็อกอินผ่าน Google
-    final user = await _authService.signInWithGoogle();
-    if (user != null) {
-      final token = await user.getIdToken();  // ใช้ getIdToken() เพื่อดึง token
-      print("ID Token: $token");  // พิมพ์ token เพื่อตรวจสอบ
-      final verifyResponse = await http.post(
-        Uri.parse('http://192.168.1.116:8000/verify-token'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'token': token}),
-      );
-
-      if (verifyResponse.statusCode == 200) {
-        final verifyData = jsonDecode(verifyResponse.body);
-        final uid = verifyData['uid'];
-
-        // ส่งข้อมูลไปที่ google-login
-        final googleLoginResponse = await http.post(
-          Uri.parse('http://192.168.1.116:8000/google-login'),
+        // ส่ง token ไปยัง API เพื่อเช็คข้อมูลผู้ใช้
+        final response = await http.post(
+          Uri.parse('http://192.168.1.116:8000/login'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'uid': uid,
-            'email': user.email,
-          }),
+          body: jsonEncode({'token': token}),
         );
 
-        if (googleLoginResponse.statusCode == 200) {
-          final googleLoginData = jsonDecode(googleLoginResponse.body);
-          // ตั้งค่าข้อมูลผู้ใช้ใน UserProvider
-          Provider.of<UserProvider>(context, listen: false).setUser(
-            user.displayName ?? "Anonymous",
-            user.email ?? 'unknown@domain.com',
-            "user",
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final userEmail = data['email']; // ใช้ email แทน uid
+          print("User Email: $userEmail"); // พิมพ์ email ที่ได้จาก Firebase
+
+          // ส่ง email ไปเช็คใน API users
+          final userResponse = await http.get(
+            Uri.parse('http://192.168.1.116:8000/users'),
           );
 
-          // ไปยังหน้า Home
-          Navigator.pushReplacementNamed(context, '/home');
+          if (userResponse.statusCode == 200) {
+            final List<dynamic> usersData = jsonDecode(userResponse.body);
+            final userData = usersData.firstWhere(
+              (user) => user['email'] == userEmail,
+              orElse: () => null,
+            );
+
+            if (userData != null) {
+              print("User Data: $userData"); // พิมพ์ข้อมูลผู้ใช้จาก API
+
+              // ตั้งค่าผู้ใช้ใน Provider
+              Provider.of<UserProvider>(context, listen: false).setUser(
+                userData['display_name'],
+                userData['email'],
+                userData['role'],
+                userData['photo_url'] ?? 'default_avatar_url', // ส่ง photo_url ไปที่ Provider
+              );
+
+              // ตรวจสอบว่าผู้ใช้มีรหัสผ่านหรือยัง
+              if (userData['password'] == null) {
+                print(
+                    "User does not have a password. Redirecting to set password.");
+                Navigator.pushReplacementNamed(context, '/set-password',
+                    arguments: userEmail); // ส่ง email ไปที่หน้า SetPassword
+              } else {
+                print("User already has a password. Redirecting to home.");
+                Navigator.pushReplacementNamed(
+                    context, '/home'); // ถ้ามีรหัสผ่านแล้ว ไปที่หน้า Home
+              }
+            } else {
+              print("User not found");
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("User not found")),
+              );
+            }
+          } else {
+            print("Failed to fetch user data: ${userResponse.body}");
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Failed to fetch user data")),
+            );
+          }
         } else {
+          print("Login failed: ${response.body}");
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Google login failed")),
+            SnackBar(content: Text("Login failed: ${response.body}")),
           );
         }
       } else {
+        print("Google Sign-In was cancelled");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Invalid token")),
+          SnackBar(content: Text("Google Sign-In was cancelled")),
         );
       }
-    } else {
+    } catch (e) {
+      print("Login Error: $e"); // พิมพ์ error หากเกิดข้อผิดพลาด
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In was cancelled")),
+        SnackBar(content: Text("Login failed: $e")),
       );
     }
-  } catch (e) {
-    // แสดง error หากล็อกอินล้มเหลว
-    print("Login Error: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Login failed: $e")),
-    );
   }
-}
 
+  Future<void> loginWithEmailPassword(BuildContext context) async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("กรุณากรอกข้อมูลให้ครบถ้วน")),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.116:8000/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        Provider.of<UserProvider>(context, listen: false).setUser(
+          data['display_name'],
+          data['email'],
+          "user",
+          data['photo_url'] ?? 'default_avatar_url'
+        );
+
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Login failed: ${response.body}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: Unable to connect to server")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +164,7 @@ Future<void> loginWithGoogle(BuildContext context) async {
                 ),
               ),
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             TextField(
               controller: emailController,
               decoration: InputDecoration(
@@ -125,9 +173,7 @@ Future<void> loginWithGoogle(BuildContext context) async {
                 prefixIcon: Icon(Icons.email),
               ),
             ),
-            SizedBox(
-              height: 10,
-            ),
+            SizedBox(height: 10),
             TextField(
               controller: passwordController,
               decoration: InputDecoration(
@@ -135,68 +181,19 @@ Future<void> loginWithGoogle(BuildContext context) async {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.password),
               ),
+              obscureText: true, // ซ่อนรหัสผ่าน
             ),
-            SizedBox(
-              height: 15,
-            ),
+            SizedBox(height: 15),
             Center(
               child: Column(
                 children: [
-                  //Login Button
                   ElevatedButton(
                     onPressed: () async {
-                      final email = emailController.text.trim();
-                      final password = passwordController.text.trim();
-                      if (email.isEmpty || password.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("กรุณากรอกข้อมูลให้ครบถ้วน")),
-                        );
-                        return;
-                      }
-
-                      try {
-                        final users = await fetchUsers();
-                        final user = users.firstWhere(
-                          (user) => user['email'] == email && user['password'] == password,
-                          orElse: () => {},
-                        );
-
-                        if (user.isNotEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Welcome ${user['email']}! Role: ${user['role']}")),
-                          );
-                          Navigator.pushNamed(
-                            context,
-                            '/home',
-                            arguments: {
-                              'email': user['email'],
-                              'role': user['role'],
-                            },
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Invalid email or password")),
-                          );
-                        }
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Error: Unable to connect to server")),
-                        );
-                      }
+                      await loginWithEmailPassword(context);
                     },
-                    child: Text(
-                      "Login",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
+                    child: Text("Login", style: TextStyle(fontSize: 18)),
                   ),
-                  
-                  SizedBox(
-                    height: 10,
-                  ),
-
-                  //Google Sign in Button
+                  SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () async {
                       await loginWithGoogle(context);
@@ -205,12 +202,7 @@ Future<void> loginWithGoogle(BuildContext context) async {
                       backgroundColor: Colors.red[400],
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(
-                      "Google",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
+                    child: Text("Google", style: TextStyle(fontSize: 18)),
                   ),
                 ],
               ),

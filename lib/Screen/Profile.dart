@@ -144,7 +144,7 @@ class ProfilePage extends StatelessWidget {
   void _logout(BuildContext context) {
     // ลบข้อมูลผู้ใช้จาก Provider
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.setUser('', '', '');
+    userProvider.setUser('', '', '','');
 
     // ไปหน้า Login
     Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);

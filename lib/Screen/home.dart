@@ -3,8 +3,6 @@ import 'package:demoproject/Navigation/BotNav.dart';
 import 'package:demoproject/Navigation/Nav_helper.dart';
 import 'package:demoproject/Login/user_provider.dart';
 import 'package:provider/provider.dart';
-// import 'package:flutter/material.dart';
-// import 'package:demoproject/Screen/Profile.dart';
 
 class Myhomepage extends StatelessWidget {
   const Myhomepage({super.key});
@@ -29,19 +27,25 @@ class Myhomepage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // TOP
+          // TOP - แสดงข้อมูลผู้ใช้
           Padding(
             padding: EdgeInsets.all(16),
             child: Row(
               children: [
+                // แสดงรูปโปรไฟล์ของผู้ใช้
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.black,
-                    size: 30,
-                  ),
+                  backgroundImage: user.photoUrl.isNotEmpty
+                      ? NetworkImage(user.photoUrl)
+                      : null,
+                  child: user.photoUrl.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          color: Colors.black,
+                          size: 30,
+                        )
+                      : null,
                 ),
                 SizedBox(
                   width: 10,
@@ -59,9 +63,8 @@ class Myhomepage extends StatelessWidget {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 1.0,
-                              vertical: 1.0), // เพิ่ม padding ด้านใน
-                          color: Colors.purple[900], // กำหนดสีพื้นหลัง
+                              horizontal: 1.0, vertical: 1.0),
+                          color: Colors.purple[900],
                           child: Text(
                             user.role,
                             style: TextStyle(
@@ -74,15 +77,9 @@ class Myhomepage extends StatelessWidget {
                     ),
                     Text(
                       user.name,
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    // Text(
-                    //   "(${user.email})",
-                    //   style: TextStyle(
-                    //     fontSize: 8,
-                    //   ),
-                    // ),
                   ],
                 ),
                 Spacer(),
@@ -96,7 +93,7 @@ class Myhomepage extends StatelessWidget {
             ),
           ),
 
-          //announcer
+          // Announcer Section
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -139,7 +136,7 @@ class Myhomepage extends StatelessWidget {
             ),
           ),
 
-          // Navigator
+          // Navigator Section - ปุ่มต่างๆ
           Container(
             width: MediaQuery.of(context).size.width * 0.9,
             decoration: BoxDecoration(
@@ -166,7 +163,6 @@ class Myhomepage extends StatelessWidget {
                     label: "Documents",
                     color: Colors.blue,
                     onPressed: () {
-                      // ตัวอย่าง: แสดงข้อความ
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Documents button pressed!")),
                       );
@@ -178,7 +174,6 @@ class Myhomepage extends StatelessWidget {
                     label: "Upload",
                     color: Colors.teal,
                     onPressed: () {
-                      // ตัวอย่าง: แสดงข้อความ
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Upload button pressed!")),
                       );
@@ -190,7 +185,6 @@ class Myhomepage extends StatelessWidget {
                     label: "Checklist",
                     color: Colors.orange,
                     onPressed: () {
-                      // ตัวอย่าง: แสดงข้อความ
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Checklist button pressed!")),
                       );
@@ -202,7 +196,6 @@ class Myhomepage extends StatelessWidget {
                     label: "Contact",
                     color: Colors.red,
                     onPressed: () {
-                      // ตัวอย่าง: แสดงข้อความ
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Contact button pressed!")),
                       );
@@ -228,10 +221,10 @@ class Myhomepage extends StatelessWidget {
     required IconData icon,
     required String label,
     required Color color,
-    required VoidCallback onPressed, // เพิ่มพารามิเตอร์ onPressed
+    required VoidCallback onPressed,
   }) {
     return GestureDetector(
-      onTap: onPressed, // ใช้ onPressed เมื่อกด
+      onTap: onPressed,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

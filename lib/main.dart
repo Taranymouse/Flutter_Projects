@@ -1,4 +1,5 @@
 import 'package:demoproject/Login/Login.dart';
+import 'package:demoproject/Login/SetPassword.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:demoproject/Screen/Profile.dart';
@@ -34,6 +35,7 @@ class DemoApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/home': (context) => Myhomepage(),
+        '/set-password': (context) => SetPasswordPage(),
       },
     );
   }
